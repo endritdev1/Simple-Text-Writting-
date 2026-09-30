@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Scrivi">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Scrivi ogni giorno</title>
+<style>
+:root{
+  --bg:#E9EEF2; --paper:#FFFFFF; --ink:#1C2733; --muted:#5E6E7C; --line:#D3DCE3;
+  --accent:#2A6C8C; --accent-ink:#FFFFFF; --ok:#3B8A57;
+  --serif:"Iowan Old Style","Charter","Palatino Linotype",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#10171D; --paper:#182129; --ink:#E3E9ED; --muted:#93A3B0; --line:#2A3641;
+    --accent:#6DB3D2; --accent-ink:#10171D; --ok:#67C08A;
+  }
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--sans);
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);
+  display:flex;flex-direction:column;height:100dvh;
+}
+header{display:flex;align-items:center;gap:8px;padding:10px 16px;flex-wrap:wrap}
+h1{font-size:1.05rem;font-weight:650;margin:0 auto 0 0}
+button,.btn{
+  font:inherit;font-size:1rem;min-height:44px;padding:0 16px;border-radius:10px;
+  border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;
+  display:inline-flex;align-items:center;-webkit-tap-highlight-color:transparent;
+}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button:focus-visible,.btn:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+main{flex:1;min-height:0;display:flex;justify-content:center;padding:0 16px}
+.doc{
+  width:100%;max-width:760px;height:100%;display:flex;flex-direction:column;min-height:0;
+  background:var(--paper);border:1px solid var(--line);border-radius:14px;
+  padding:14px clamp(18px,5vw,48px) 0;
+}
+#title{
+  border:0;background:transparent;color:var(--ink);font-family:var(--serif);font-size:1.7rem;font-weight:650;
+  padding:6px 0;width:100%;
+}
+#title::placeholder,textarea::placeholder{color:var(--muted);opacity:.7}
+#title:focus-visible,textarea:focus-visible{outline:none}
+.tools{display:flex;gap:2px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tools button{
+  border:0;background:transparent;color:var(--muted);min-height:40px;min-width:44px;
+  padding:0 12px;justify-content:center;font-size:.95rem;
+}
+.tools button:hover{color:var(--ink)}
+.tools button:active{background:var(--bg)}
+textarea{
+  flex:1;min-height:0;width:100%;resize:none;border:0;background:transparent;color:var(--ink);
+  font-family:var(--serif);font-size:1.25rem;line-height:1.7;padding:18px 0 28px;
+}
+footer{padding:12px 16px 14px;max-width:792px;width:100%;margin:0 auto}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.count{font-size:1.1rem;font-variant-numeric:tabular-nums}
+.count b{font-size:1.5rem}
+.goal{display:flex;align-items:center;gap:8px;color:var(--muted);margin-left:auto}
+.goal input{
+  width:92px;min-height:44px;font:inherit;font-size:1rem;text-align:center;border-radius:10px;
+  border:1px solid var(--line);background:var(--paper);color:var(--ink);
+}
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:10px 0 8px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.bar.done i{background:var(--ok)}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem;gap:12px;flex-wrap:wrap}
+.spark{display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 6px 8px 14px;width:calc(100% - 32px);max-width:760px;margin:0 auto 10px;flex-shrink:0}
+.spark[hidden]{display:none}
+.sparkrows{display:grid;gap:2px;min-width:0}
+.sparkrows span{color:var(--muted);display:inline-block;width:66px;font-size:.9rem}
+.sparkrows b,.sparkrows a{font-family:var(--serif);font-weight:500;font-size:1.05rem}
+.sparkrows a{color:inherit;text-decoration:underline dotted;text-underline-offset:4px}
+.sparkrows a:not([href]){text-decoration:none}
+.sparkrows small{color:var(--muted);font-size:.85rem;line-height:1.35}
+.sparkbtns{display:flex;flex-shrink:0}
+.sparkbtns button{border:0;background:transparent;color:var(--muted);min-height:40px;padding:0 10px;font-size:.9rem}
+#ask{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+#ask[hidden]{display:none}
+#ask .box{background:var(--paper);border-radius:14px;padding:20px;max-width:380px;width:100%}
+#ask p{margin:0 0 16px;line-height:1.5}
+#ask .acts{display:flex;gap:10px;justify-content:flex-end}
+#toast{
+  position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translate(-50%,-140%);
+  background:var(--ok);color:#fff;padding:14px 18px;border-radius:12px;font-weight:600;
+  display:flex;gap:14px;align-items:center;max-width:92vw;transition:transform .3s;z-index:10;
+}
+#toast.show{transform:translate(-50%,0)}
+#toast button{min-height:36px;padding:0 12px;background:rgba(255,255,255,.2);color:#fff;border:0}
+@media (prefers-reduced-motion:reduce){#toast,.bar i{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Scrivi ogni giorno</h1>
+  <button id="btnSpark" type="button">Ispirazione</button>
+  <button id="btnNew" type="button">Nuovo</button>
+  <label class="btn" for="fileIn" tabindex="0" id="lblOpen">Apri file</label>
+  <input id="fileIn" type="file" accept=".txt,.md,text/plain" hidden>
+  <button id="btnSave" class="primary" type="button">Salva file</button>
+</header>
+
+  <div id="spark" class="spark" hidden>
+    <div class="sparkrows">
+      <div><span>Oggetto</span><b id="sparkO"></b></div>
+      <div><span>Spunto</span><a id="sparkS" target="_blank" rel="noopener"></a></div>
+      <div id="sparkDline"><span></span><small id="sparkD"></small></div>
+    </div>
+    <div class="sparkbtns">
+      <button id="sparkAgain" type="button">Ripesca</button>
+      <button id="sparkClose" type="button" aria-label="Chiudi ispirazione">Chiudi</button>
+    </div>
+  </div>
+
+<main>
+  <div class="doc">
+    <input id="title" type="text" placeholder="Titolo" autocomplete="off" autocapitalize="sentences" aria-label="Titolo">
+    <div class="tools" id="tools" role="toolbar" aria-label="Formattazione">
+      <button type="button" data-act="b" aria-label="Grassetto"><b>G</b></button>
+      <button type="button" data-act="i" aria-label="Corsivo"><i>C</i></button>
+    </div>
+    <textarea id="text" placeholder="Inizia a scrivere qui…" spellcheck="true" autocapitalize="sentences" aria-label="Testo"></textarea>
+  </div>
+</main>
+
+<footer>
+  <div class="row">
+    <div class="count"><b id="today">0</b> parole oggi</div>
+    <label class="goal">Obiettivo
+      <input id="goal" type="number" inputmode="numeric" min="1" max="100000" step="50">
+    </label>
+  </div>
+  <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i id="fill"></i></div>
+  <div class="meta">
+    <span id="total">0 parole nel testo</span>
+    <span id="streak"></span>
+    <span id="saved">Salvato</span>
+  </div>
+</footer>
+
+<div id="ask" hidden><div class="box" role="alertdialog" aria-modal="true" aria-labelledby="askMsg">
+  <p id="askMsg"></p>
+  <div class="acts"><button id="askNo" type="button">Annulla</button><button id="askYes" class="primary" type="button"></button></div>
+</div></div>
+
+<div id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastClose" type="button">Chiudi</button></div>
+
+<script>
+(function(){
+  var KEY = "scrivi-ogni-giorno-v1";
+  var $ = function(id){return document.getElementById(id)};
+  var text=$("text"), goalIn=$("goal");
+  var state = {carry:0, title:"", text:"", goal:500, day:"", baseline:0, notified:false, met:{}};
+
+  function dayKey(d){
+    d = d || new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function countWords(s){
+    // conta solo le parole vere: i simboli di formattazione (#, **, *) non contano
+    return s.split(/\s+/).filter(function(w){return /[\p{L}\p{N}]/u.test(w)}).length;
+  }
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(raw){ var p = JSON.parse(raw); for(var k in p) state[k]=p[k]; }
+    }catch(e){}
+    var today = dayKey();
+    if(state.day !== today){           // nuovo giorno: si riparte da zero
+      state.day = today;
+      state.baseline = countWords(state.text);
+      state.carry = 0;
+      state.spark = null;
+      state.notified = false;
+    }
+  }
+  var saveTimer;
+  function persist(){
+    try{
+      localStorage.setItem(KEY, JSON.stringify(state));
+      $("saved").textContent = "Salvato";
+    }catch(e){
+      $("saved").textContent = "Salvataggio non riuscito: usa Salva file";
+    }
+  }
+  function schedulePersist(){
+    $("saved").textContent = "Salvataggio…";
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(persist, 400);
+  }
+  function streak(){
+    var n=0, d=new Date();
+    if(!state.met[dayKey(d)]) d.setDate(d.getDate()-1);   // oggi non ancora completato: conta da ieri
+    while(state.met[dayKey(d)]){ n++; d.setDate(d.getDate()-1); }
+    return n;
+  }
+  function chime(){
+    try{
+      var C = window.AudioContext||window.webkitAudioContext, c = new C();
+      [660,880].forEach(function(f,i){
+        var o=c.createOscillator(), g=c.createGain();
+        o.frequency.value=f; o.connect(g); g.connect(c.destination);
+        var t=c.currentTime+i*0.18;
+        g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.15,t+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+0.4);
+        o.start(t); o.stop(t+0.42);
+      });
+    }catch(e){}
+  }
+  var toastTimer;
+  function toast(msg){
+    $("toastMsg").textContent = msg;
+    $("toast").classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){$("toast").classList.remove("show")}, 9000);
+  }
+  function update(fromTyping){
+    var total = countWords(text.value);
+    var written = (state.carry||0) + Math.max(0, total - state.baseline);
+    var pct = Math.min(100, Math.round(written / state.goal * 100));
+    $("today").textContent = written;
+    $("total").textContent = total + (total===1?" parola nel testo":" parole nel testo");
+    $("fill").style.width = pct+"%";
+    $("bar").classList.toggle("done", written >= state.goal);
+    $("bar").setAttribute("aria-valuenow", pct);
+    if(written >= state.goal){
+      state.met[state.day] = true;
+      if(!state.notified){
+        state.notified = true;
+        if(fromTyping){
+          toast("Obiettivo raggiunto: "+state.goal+" parole. Puoi continuare a scrivere.");
+          chime();
+          if(navigator.vibrate) navigator.vibrate([120,60,120]);
+        }
+      }
+    }else{
+      state.notified = false;
+      delete state.met[state.day];
+    }
+    var s = streak();
+    $("streak").textContent = s ? s+(s===1?" giorno di fila":" giorni di fila") : "";
+  }
+
+  text.addEventListener("input", function(){
+    state.text = text.value;
+    update(true);
+    schedulePersist();
+  });
+  goalIn.addEventListener("change", function(){
+    var v = parseInt(goalIn.value,10);
+    if(!v || v<1) v = state.goal;
+    state.goal = Math.min(100000,v);
+    goalIn.value = state.goal;
+    update(false);
+    persist();
+  });
+
+  $("title").addEventListener("input", function(){
+    state.title = $("title").value;
+    schedulePersist();
+  });
+
+  // formattazione minima in Markdown: il testo resta semplice e leggibile ovunque
+  function fire(){ text.dispatchEvent(new Event("input")); }
+  function wrap(m){
+    var v=text.value, s=text.selectionStart, e=text.selectionEnd, n=m.length;
+    if(v.slice(s-n,s)===m && v.slice(e,e+n)===m){
+      text.setRangeText(v.slice(s,e), s-n, e+n, "select");
+    }else if(s===e){
+      text.setRangeText(m+m, s, e, "end"); text.selectionStart=text.selectionEnd=s+n;
+    }else{
+      text.setRangeText(m+v.slice(s,e)+m, s, e, "select");
+      text.selectionStart=s+n; text.selectionEnd=e+n;
+    }
+    fire();
+  }
+  function act(a){
+    if(a==="b") wrap("**"); else if(a==="i") wrap("*"); 
+    text.focus();
+  }
+  $("tools").addEventListener("mousedown", function(e){e.preventDefault()});   // non toglie il cursore dal testo
+  $("tools").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(b) act(b.dataset.act);
+  });
+  text.addEventListener("keydown", function(e){
+    if((e.metaKey||e.ctrlKey) && !e.shiftKey && !e.altKey){
+      var k=e.key.toLowerCase();
+      if(k==="b"){e.preventDefault(); act("b");}
+      else if(k==="i"){e.preventDefault(); act("i");}
+    }
+  });
+
+  // ispirazione: pesca un oggetto e uno spunto a caso
+  var OGGETTI = ["una chiave arrugginita","un ombrello dimenticato","una tazza scheggiata","un orologio fermo","una lettera mai spedita","un paio di scarpe consumate","una valigia mezza aperta","una lampada accesa di notte","un biglietto del treno","una fotografia sbiadita","un quaderno vuoto","una bicicletta senza catena","un cappotto troppo grande","una candela quasi finita","un vaso incrinato","un telefono che squilla","una mappa piegata male","un cassetto che non si apre","una radio vecchia","un paio di occhiali rotti","una pianta secca","uno specchio appannato","un libro con una dedica","una moneta trovata per terra","una porta socchiusa","un pacco senza mittente","un bicchiere mezzo pieno","un pettine di legno","una sedia vuota al tavolo","un ombrellone chiuso in inverno"];
+  var SPUNTI = ["un ricordo d'infanzia","una conversazione ascoltata per caso","qualcosa che hai smesso di fare","un luogo dove non tornerai","una promessa mantenuta","un viaggio andato storto","una paura che ora ti fa sorridere","il rumore di una casa di notte","una persona che ti ha fatto cambiare idea","cosa faresti con un giorno in più","un profumo che riporta indietro","una regola che hai infranto","un incontro mancato","il primo giorno in un posto nuovo","qualcosa che hai perso e non ti manca","una bugia gentile","una decisione presa in cinque minuti","un sogno che ricordi ancora","l'ultima volta che hai riso davvero","la stanza dove ti senti al sicuro","un vicino che non hai mai conosciuto","un lavoro che non hai fatto","un'abitudine di qualcuno che ami","un'estate che non finiva mai"];
+  function pick(list, not){
+    var x;
+    do{ x = list[Math.floor(Math.random()*list.length)]; }while(x===not && list.length>1);
+    return x;
+  }
+  function showSpark(){
+    var sp = state.spark;
+    $("spark").hidden = !sp;
+    if(!sp) return;
+    $("sparkO").textContent = sp.o;
+    var a = $("sparkS");
+    a.textContent = sp.s;
+    if(sp.u) a.setAttribute("href", sp.u); else a.removeAttribute("href");
+    $("sparkD").textContent = sp.d || "";
+    $("sparkDline").hidden = !sp.d;
+  }
+  // argomento a caso da Wikipedia in italiano (se manca la rete, usa la lista interna)
+  function fetchTopic(tries){
+    var ctl = new AbortController(), timer = setTimeout(function(){ctl.abort()}, 7000);
+    var url = "https://it.wikipedia.org/w/api.php?action=query&generator=random&grnnamespace=0&grnlimit=1"
+      + "&prop=extracts|description|info|pageprops&ppprop=disambiguation&exintro=1&explaintext=1&exsentences=1&inprop=url"
+      + "&format=json&origin=*";
+    return fetch(url, {signal:ctl.signal, cache:"no-store"})
+      .then(function(r){ if(!r.ok) throw new Error("http"); return r.json(); })
+      .then(function(j){
+        clearTimeout(timer);
+        var pages = j.query && j.query.pages, id = pages && Object.keys(pages)[0], pg = id && pages[id];
+        if(!pg || !pg.title || (pg.pageprops && "disambiguation" in pg.pageprops)){
+          if(tries > 1) return fetchTopic(tries-1);
+          throw new Error("vuoto");
+        }
+        var d = pg.description || (pg.extract || "").slice(0,120);
+        return {title:pg.title, desc:d ? d+" (da Wikipedia)" : "Da Wikipedia", url:pg.fullurl || ""};
+      })
+      .catch(function(e){ clearTimeout(timer); throw e; });
+  }
+  var drawId = 0;
+  function draw(){
+    var sp = state.spark || {}, my = ++drawId, o = pick(OGGETTI, sp.o);
+    $("spark").hidden = false;
+    $("sparkO").textContent = o;
+    $("sparkS").removeAttribute("href");
+    $("sparkS").textContent = "Cerco un argomento…";
+    $("sparkDline").hidden = true;
+    fetchTopic(3).then(function(t){
+      return {o:o, s:t.title, d:t.desc, u:t.url};
+    }).catch(function(){
+      return {o:o, s:pick(SPUNTI, sp.s)};
+    }).then(function(res){
+      if(my !== drawId) return;            // e' partita una pescata piu recente
+      state.spark = res; showSpark(); persist();
+    });
+  }
+  $("btnSpark").addEventListener("click", draw);
+  $("sparkAgain").addEventListener("click", draw);
+  $("sparkClose").addEventListener("click", function(){ state.spark = null; showSpark(); persist(); });
+
+  function ask(msg, yes){
+    return new Promise(function(res){
+      $("askMsg").textContent = msg; $("askYes").textContent = yes; $("ask").hidden = false; $("askNo").focus();
+      function done(v){ $("ask").hidden = true; res(v); }
+      $("askYes").onclick = function(){done(true)};
+      $("askNo").onclick = function(){done(false)};
+    });
+  }
+  // le parole gia scritte oggi restano nel conteggio anche se il testo viene sostituito
+  function bank(){ state.carry = (state.carry||0) + Math.max(0, countWords(text.value) - state.baseline); }
+
+  function slug(t){
+    return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,50);
+  }
+
+  $("btnSave").addEventListener("click", function(){
+    var t = state.title.trim();
+    var out = (t ? "# "+t+"\n\n" : "") + text.value;
+    var blob = new Blob([out], {type:"text/plain;charset=utf-8"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = (slug(t) || "scrittura-"+dayKey()) + ".txt";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href)}, 2000);
+  });
+  $("fileIn").addEventListener("change", function(e){
+    var f = e.target.files[0];
+    if(!f) return;
+    e.target.value="";
+    if(text.value.trim() || state.title.trim()){
+      ask("Aprire questo file sostituisce il testo attuale. L'hai già salvato?", "Apri file").then(function(ok){ if(ok) readIt(f); });
+    }else readIt(f);
+  });
+  function readIt(f){
+    bank();
+    var r = new FileReader();
+    r.onload = function(){
+      var body = String(r.result), m = body.match(/^# (.+)\r?\n+/);
+      state.title = m ? m[1].trim() : "";
+      if(m) body = body.slice(m[0].length);
+      $("title").value = state.title;
+      text.value = body;
+      state.text = text.value;
+      state.baseline = countWords(text.value);   // il file aperto non conta come scritto oggi
+      update(false); persist();
+    };
+    r.readAsText(f);
+  }
+  $("lblOpen").addEventListener("keydown", function(e){
+    if(e.key==="Enter"||e.key===" "){e.preventDefault(); $("fileIn").click();}
+  });
+  function clearAll(){
+    bank();
+    text.value = ""; state.text = ""; state.baseline = 0; state.title = ""; $("title").value = "";
+    update(false); persist(); text.focus();
+  }
+  $("btnNew").addEventListener("click", function(){
+    if(text.value.trim() || state.title.trim()){
+      ask("Iniziare un nuovo testo? Quello attuale verrà cancellato: salvalo prima se ti serve.", "Nuovo testo")
+        .then(function(ok){ if(ok) clearAll(); });
+    }else clearAll();
+  });
+  $("toastClose").addEventListener("click", function(){$("toast").classList.remove("show")});
+
+  // al ritorno sull'app (es. iPad il giorno dopo) controlla il cambio di data
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState==="visible" && state.day!==dayKey()){
+      state.day=dayKey(); state.baseline=countWords(text.value); state.carry=0; state.spark=null; showSpark(); state.notified=false;
+      update(false); persist();
+    }
+  });
+  window.addEventListener("pagehide", persist);
+
+  load();
+  text.value = state.text;
+  $("title").value = state.title || "";
+  goalIn.value = state.goal;
+  update(false);
+  showSpark();
+  persist();
+})();
+</script>
+</body>
+</html>
